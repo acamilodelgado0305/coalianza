@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Award, BookOpen, Users, X, ChevronRight, Check, Globe, Clock, Shield } from 'lucide-react';
+import { AlertCircle, Award, BookOpen, Users, X, ChevronRight, Check, Globe, Clock, Shield, CheckCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+
 import ServicesCarousel from './ServicesCarousel';
 
 const App = () => {
@@ -7,6 +11,9 @@ const App = () => {
   const [cedula, setCedula] = useState('');
   const [error, setError] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [certificateData, setCertificateData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [validationSuccess, setValidationSuccess] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,13 +23,42 @@ const App = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleValidate = () => {
+  const handleValidate = async () => {
     if (!cedula.trim()) {
       setError('Por favor ingrese un número de cédula válido');
       return;
     }
+
+    setIsLoading(true);
     setError('');
-    alert('Verificando certificado...');
+
+    try {
+      const response = await fetch(`https://backendcoalianza.onrender.com/api/v1/clients/${cedula}`);
+      if (!response.ok) {
+        throw new Error('Certificado no encontrado');
+      }
+      const data = await response.json();
+      setCertificateData(data);
+      setValidationSuccess(true);
+    } catch (error) {
+      setError('No se encontró un certificado válido para este número de documento');
+      setCertificateData(null);
+      setValidationSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return format(new Date(dateString), "d 'de' MMMM 'de' yyyy", { locale: es });
+  };
+
+  const resetModal = () => {
+    setIsModalOpen(false);
+    setCedula('');
+    setError('');
+    setCertificateData(null);
+    setValidationSuccess(false);
   };
 
   const stats = [
@@ -205,45 +241,90 @@ const App = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Validar Certificado</h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={resetModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <p className="text-gray-600 mb-6">
-              Ingrese su número de cédula para verificar la autenticidad de su certificado
-            </p>
-            <input
-              type="text"
-              placeholder="Número de Cédula"
-              value={cedula}
-              onChange={(e) => setCedula(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-green-600 transition-all"
-            />
-            {error && (
-              <div className="flex items-center text-red-600 text-sm mb-6">
-                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                {error}
+
+            {!validationSuccess ? (
+              <>
+                <p className="text-gray-600 mb-6">
+                  Ingrese su número de cédula para verificar la autenticidad de su certificado
+                </p>
+                <input
+                  type="text"
+                  placeholder="Número de Cédula"
+                  value={cedula}
+                  onChange={(e) => setCedula(e.target.value)}
+                  className="w-full p-4 border border-gray-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-green-600 transition-all"
+                />
+                {error && (
+                  <div className="flex items-center text-red-600 text-sm mb-6">
+                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
+                <div className="flex gap-4">
+                  <button
+                    onClick={resetModal}
+                    className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleValidate}
+                    disabled={isLoading}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    {isLoading ? 'Verificando...' : 'Verificar'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-center text-green-600 mb-4">
+                  <CheckCircle className="w-16 h-16" />
+                </div>
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-green-600 mb-2">¡Certificado Válido!</h3>
+                  <p className="text-gray-600">El certificado se encuentra registrado y vigente</p>
+                </div>
+                <div className="bg-green-50 rounded-lg p-6 space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Nombre Completo</p>
+                    <p className="text-lg font-semibold">{`${certificateData.nombre} ${certificateData.apellido}`}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Documento de Identidad</p>
+                    <p className="text-lg font-semibold">{certificateData.numeroDeDocumento}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Tipo de Certificación</p>
+                    <p className="text-lg font-semibold">{certificateData.tipo.join(', ')}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Fecha de Expedición</p>
+                    <p className="text-lg font-semibold">{formatDate(certificateData.createdAt)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Fecha de Vencimiento</p>
+                    <p className="text-lg font-semibold">{formatDate(certificateData.fechaVencimiento)}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={resetModal}
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all transform hover:scale-105"
+                >
+                  Cerrar
+                </button>
               </div>
             )}
-            <div className="flex gap-4">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleValidate}
-                className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all transform hover:scale-105"
-              >
-                Verificar
-              </button>
-            </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };
