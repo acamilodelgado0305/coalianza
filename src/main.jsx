@@ -1,10 +1,37 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./index.css";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+import Landing from "./components/ui/Landing";
+import Validacion from "./components/ui/Validacion";
+
+// Crear una sola instancia de root
+const rootElement = document.getElementById("root");
+if (!rootElement._root) {
+  rootElement._root = ReactDOM.createRoot(rootElement);
+}
+
+const App = () => (
+  <React.StrictMode>
+    <Router>
+     
+        <Routes>
+          {/* Rutas públicas */}
+          <Route path="/" element={<Landing />} />
+          
+          
+     
+          <Route path="/consulta-cliente" element={<Validacion />}>
+          
+       
+          </Route>
+
+          
+        </Routes>
+    
+    </Router>
+  </React.StrictMode>
+);
+
+rootElement._root.render(<App />);

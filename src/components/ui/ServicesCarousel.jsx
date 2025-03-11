@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import POST1 from './images/POST1.png';
-import POST2 from './images/POST2.png';
+import POST1 from '../../images/POST1.png';
+import POST2 from '../../images/POST2.png';
 
 
 const ServicesCarousel = () => {

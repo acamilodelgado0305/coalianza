@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, Award, BookOpen, Users, X, ChevronRight, Check, Globe, Clock, Shield, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Link } from 'react-router-dom'; // Add this import
 
 
-import ServicesCarousel from './components/ui/ServicesCarousel';
+import ServicesCarousel from './ServicesCarousel';
 
-const App = () => {
+const Landing = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cedula, setCedula] = useState('');
   const [error, setError] = useState('');
@@ -33,7 +34,7 @@ const App = () => {
     setError('');
 
     try {
-      const response = await fetch(`https://backendcoalianza.vercel.app/api/v1/clients/${cedula}`);
+      const response = await fetch(`https://backendcoalianza.vercel.Landing/api/v1/clients/${cedula}`);
       if (!response.ok) {
         throw new Error('Certificado no encontrado');
       }
@@ -81,12 +82,12 @@ const App = () => {
               <button className="text-gray-700 hover:text-green-600 transition-colors">Empresas</button>
               <button className="text-gray-700 hover:text-green-600 transition-colors">Contacto</button>
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
+            <Link
+              to="/consulta-cliente"
               className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-all transform hover:scale-105 shadow-lg"
             >
               Validar Certificado
-            </button>
+            </Link>
           </nav>
         </div>
       </header>
@@ -329,4 +330,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Landing;
