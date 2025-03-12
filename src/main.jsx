@@ -18,7 +18,7 @@ const App = () => (
      
         <Routes>
           {/* Rutas públicas */}
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Validacion />} />
           
           
      
