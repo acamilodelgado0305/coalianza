@@ -61,7 +61,7 @@ const Validacion = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Validación de Certificados</h1>
-              <p className="text-gray-600">Sistema oficial de verificación de Coalianza</p>
+              <p className="text-gray-600">Sistema oficial de verificación de SixNyx</p>
             </div>
             <div className="flex items-center bg-green-100 px-4 py-2 rounded-lg">
               <ShieldCheck className="w-6 h-6 text-green-600 mr-2" />
